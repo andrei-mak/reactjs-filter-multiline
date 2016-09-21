@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Filter Multiline</title>
+
+  <!-- Bootstrap -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+
+  <link href="css/style.css" rel="stylesheet">
+
+  <script src="js/react.js"></script>
+  <script src="js/react-dom.js"></script>
+  <script src="js/browser.min.js"></script>
+
+</head>
+<body>
+  <div class="container-fluid">
+    <div id="content"></div>
+  </div>
+  <script type="text/babel">
+
+  // ** JSX code goes here! **
+
+  var App = React.createClass({
+    getInitialState: function() {
+      return {
+        inputText: '',
+        inputFilter: ''
+      };
+    },
+
+    handleInputText: function(inputText) {
+       this.setState({
+         inputText: inputText
+       });
+     },
+
+     handleInputFilter: function(inputFilter) {
+        this.setState({
+          inputFilter: inputFilter
+        });
+      },
+
+      handleScrollTop: function() {
+        // how fast to scroll (this equals roughly 60 fps)
+        var fpsValue = 16;
+
+        // how far to scroll on each step
+        var stepSize = 220;
+
+        var scrollToTop = window.setInterval(function() {
+            var pos = window.pageYOffset;
+            if ( pos > 0 ) {
+                window.scrollTo( 0, pos - stepSize );
+            } else {
+                window.clearInterval( scrollToTop );
+            }
+        }, fpsValue);
+      },
+
+    render: function() {
+      return (
+        <div className="app">
+          <div className="row">
+      			<div className="col-md-4">
+      				<DisplayResult
+      					resultText={this.state.inputText}
+                filter={this.state.inputFilter}
+      				/>
+      			</div>
+      			<div className="col-md-4">
+      				<InputText
+      					inputText={this.state.inputText}
+      					onUserInput={this.handleInputText}
+      				/>
+      			</div>
+            <div className="col-md-4">
+              <InputFilter
+                inputFilter={this.state.inputFilter}
+                onUserInput={this.handleInputFilter}
+              />
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-md-2 pull-right">
+              <button className="btn btn-default" onClick={this.handleScrollTop}>Top</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  });
+
+  var InputText = React.createClass({
+	  displayName: 'InputText',
+	  getInitialState: function() {
+		return {
+		  visibleClearBtn: false
+		};
+	  },
+	  handleChange: function(event) {
+		//this.setState({value: event.target.value});
+		//console.log('event.target.val: ' + event.target.value)
+
+		this.props.onUserInput(
+			this.refs.initialTextInput.value
+		);
+
+		// Show clear button
+		this.setState({visibleClearBtn: true});
+	  },
+	  handleClearClick: function() {
+		this.refs.initialTextInput.value = '';
+
+		// Hide clear button
+		this.setState({visibleClearBtn: false});
+	  },
+	  render: function() {
+		var visible = this.state.visibleClearBtn;
+		return (
+		<div>
+		  <h4>Initial data: </h4>
+		  <form>
+		  <div className="form-group">
+			<textarea
+				name="textarea"
+				className="form-control"
+				value={this.state.value}
+				ref="initialTextInput"
+				onChange={this.handleChange}
+				rows="14"
+        placeholder="Pattern: <Number><TAB - \t><Other text><New Line - \n>"></textarea>
+			</div>
+			<div className="form-group">
+				<button type="button" className={'btn btn-default ' + (visible ? '': 'none')} onClick={this.handleClearClick}>Clear</button>
+			</div>
+		  </form>
+		</div>
+		);
+	  }
+	});
+
+  var InputFilter = React.createClass({
+    displayName: 'InputFilter',
+    getInitialState: function() {
+        return {
+          visibleClearBtn: false
+        };
+      },
+    handleChange: function(event) {
+      //this.setState({value: event.target.value});
+      //console.log('event.target.val: ' + event.target.value)
+
+      this.props.onUserInput(
+        this.refs.initialFilterInput.value
+      );
+
+      // Show clear button
+      this.setState({visibleClearBtn: true});
+    },
+    handleClearClick: function() {
+      this.refs.initialFilterInput.value = '';
+
+      // Hide clear button
+      this.setState({visibleClearBtn: false});
+    },
+    render: function() {
+    var visible = this.state.visibleClearBtn;
+    return (
+    <div>
+      <h4>Filter: </h4>
+      <form>
+      <div className="form-group">
+      <textarea
+        name="textarea"
+        className="form-control"
+        value={this.state.value}
+        ref="initialFilterInput"
+        onChange={this.handleChange}
+        rows="14"
+        placeholder="Pattern: <Number><New Line - \n>"></textarea>
+      </div>
+      <div className="form-group">
+        <button type="button" className={'btn btn-default ' + (visible ? '': 'none')} onClick={this.handleClearClick}>Clear</button>
+      </div>
+      </form>
+    </div>
+    );
+    }
+  });
+
+	var DisplayResult = React.createClass({
+		render: function() {
+
+			var result = '';
+			var total = 0;
+      var totalOriginal = 0;
+
+			var originalText = this.props.resultText;
+      var filterText = this.props.filter;
+
+			if (originalText === undefined || filterText === undefined) {
+				result = '';
+			} else {
+        if (originalText.length > 0 && filterText.length > 0) {
+
+          var stringArray = originalText.trim().replace(/\r\n/g,"\n").split("\n");
+          var filterArray = filterText.trim().replace(/\r\n/g,"\n").split("\n");
+
+          for (var i = 0; i < stringArray.length; i++) {
+            // console.log('Text Arr Val: ' + i + ' '+ stringArray[i]);
+            for (var j = 0; j < filterArray.length; j++) {
+              // console.log('Filter Arr Val: ' + j + ' '+ filterArray[j]);
+
+              var numPart = stringArray[i].substring(0,stringArray[i].indexOf("\t"));
+
+              // if (numPart.indexOf(filterArray[j]) > -1) {
+              //   result = result + stringArray[i] + '\n';
+              //   total++;
+              // }
+
+              // Numeric comparision
+              if (parseInt(numPart.trim(), 10) == parseInt(filterArray[j].trim(), 10)) {
+                result = result + stringArray[i] + '\n';
+                total++;
+              }
+
+            }
+          }
+
+          totalOriginal = stringArray.length;
+
+        } else {
+          console.log('Filter and text are empty');
+        }
+			}
+
+			return (
+				<div>
+					<h4>Result: <span className="badge">{total + ' / ' + totalOriginal}</span></h4>
+					<pre>{result}</pre>
+				</div>
+			);
+		}
+	});
+
+
+
+  ReactDOM.render(
+    <App />,
+    document.getElementById('content')
+  );
+
+  </script>
+</body>
+</html>
